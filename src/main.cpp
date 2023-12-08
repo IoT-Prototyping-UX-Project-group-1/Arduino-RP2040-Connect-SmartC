@@ -41,9 +41,6 @@ void setup()
 
   // Serial.println("Connected to Wi-Fi network...");
   // printNetworkInformation();
-  pinMode(BUZZER_PIN, OUTPUT);
-  pinMode(BTNLED_PIN, OUTPUT);
-  pinMode(VIBRATION_PIN, OUTPUT);
 
   board = new Board(BUTTON_PIN, BTNLED_PIN, BUZZER_PIN, VIBRATION_PIN, JOYSTICK_X_PIN, JOYSTICK_Y_PIN, LED_RING_PIN, 24);
   board->setTimer(50 * 60, 10 * 60);
