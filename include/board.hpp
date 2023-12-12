@@ -9,14 +9,18 @@
 #include "joystick.hpp"
 #include "display.hpp"
 
+enum TimerState
+{
+    TIMER_STARTED,
+    TIMER_PAUSED,
+    TIMER_STOPPED
+};
 typedef struct
 {
     uint8_t timesCompleted;
     uint16_t timeBuffer;
     uint16_t pauseBuffer;
-    bool isPaused;
-    bool isRunning;
-    bool isFinished;
+    TimerState state;
 } Timer;
 
 class Board
@@ -28,9 +32,10 @@ private:
     LedRing *ledRing;
     Display *display;
     Joystick *joystick;
-    Timer timer;
 
 public:
+    Timer timer;
+
     Board(
         uint8_t buttonPin, uint8_t buttonLedPin,
         uint8_t buzzerPin,
@@ -39,7 +44,6 @@ public:
         uint8_t ledRingPin, uint8_t ledRingBulbs);
 
     /* Button methods */
-    void updateButtonState();
     ButtonType getButtonState();
 
     /* LED Ring methods */
@@ -60,6 +64,7 @@ public:
     void setTimer(const uint16_t &time, const uint16_t &pause);
     void startTimer();
     void pauseTimer();
+    void stopTimer();
     uint8_t checkTimer();
 
     /* Reset Method */

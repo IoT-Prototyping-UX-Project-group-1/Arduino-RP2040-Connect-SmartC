@@ -8,60 +8,70 @@ Button::Button(uint8_t pin, uint8_t ledPin)
     pinMode(ledPin, OUTPUT);
 }
 
-ButtonType Button::getButtonState()
-{
-    return this->buttonState;
-}
-
-void Button::updateButtonState()
+ButtonType Button::checkButtonState()
 {
     this->state = digitalRead(this->pin);
 
-    if (this->state != this->lastState)
+    if (this->state == LOW && this->lastState == HIGH)
     {
+        Serial.println("Button pressed");
         this->pressCount++;
+        delay(250);
 
-        switch (buttonStateService())
+        this->state = digitalRead(this->pin);
+        if (this->state == LOW)
         {
-        case SINGLE_PRESS: /* From Unknown || Off states, a click turns the timer ON  && From Pause state (DOUBLE_PRESS), a click turns the timer back to ON*/
-            serviceStateUpdate("Button ON !", HIGH, true, false, false, SINGLE_PRESS);
-            break;
-        case NO_PRESS: /* From ON state, a single click turns the timer OFF */
-            serviceStateUpdate("Button OFF !", HIGH, true, false, true, NO_PRESS);
-            break;
-        case DOUBLE_PRESS: /* From ON state, a double click turns the timer on pause (DOUBLE_CLICK)*/
-            serviceStateUpdate("Double Click!", LOW, true, false, false, DOUBLE_PRESS);
-            break;
-        case RESET: /* When releasing the push button, led turns OFF && from any state, a longer (> 5sec) click turns the timer on reset*/
-            serviceStateUpdate("", LOW, false, true, false, RESET);
-            this->buttonState = this->pressEnd - this->pressStart > this->RESET_INTERVAL ? RESET : this->buttonState;
-            break;
-        default:
-            break;
+            Serial.println("Button was held (SINGLE CLICK)");
+            digitalWrite(this->ledPin, HIGH);
+            this->lastState = this->state;
+            return SINGLE_PRESS;
+        } else {
+            Serial.println("Button was released (DOUBLE CLICK)");
+            digitalWrite(this->ledPin, LOW);
+            for(uint8_t i = 0; i < 40; i++) {
+                delay(50);
+                this->state = digitalRead(this->pin);
+                if (this->state == LOW) {
+                    Serial.println("Button was pressed (DOUBLE CLICK)");
+                    digitalWrite(this->ledPin, HIGH);
+                    this->pressCount++;
+                    this->lastState = this->state;
+                    return DOUBLE_PRESS;
+                }
+            }
+
+            this->lastState = this->state;
+            return NO_PRESS;
+        }
+    } else if (this->state == HIGH && this->lastState == LOW) {
+        Serial.println("Button was released (UNKNOWN STATE)");
+        digitalWrite(this->ledPin, LOW);
+        this->lastState = this->state;
+        return NO_PRESS;
+    } else if (this->state == LOW && this->lastState == LOW) {
+        Serial.println("Button is being held... (LONG PRESS)");
+
+        // wait for 10 seconds:
+        for (uint8_t i = 0; i < 200; i++) {
+            delay(50);
+            this->state = digitalRead(this->pin);
+            if (this->state == HIGH) {
+                Serial.println("Button was released before 10 sec mark (LONG PRESS)");
+                digitalWrite(this->ledPin, LOW);
+                this->lastState = this->state;
+                return NO_PRESS;
+            }
         }
 
+        Serial.println("Button was held for 10 seconds (LONG PRESS)");
+        digitalWrite(this->ledPin, HIGH);
         this->lastState = this->state;
+        return LONG_PRESS;
     }
+
+    return NO_PRESS;
 }
 
-void Button::serviceStateUpdate(String serialMessage, PinStatus ledPinStatus, bool isPressStart, bool isPressEnd, bool isDoubleClick, ButtonType buttonNewState)
-{
-    this->buttonState = buttonNewState != RESET ? buttonNewState : this->buttonState;
-    Serial.println(serialMessage);
-    digitalWrite(this->ledPin, ledPinStatus);
-    this->pressStart = isPressStart ? millis() : this->pressStart;
-    this->pressEnd = isPressEnd ? millis() : this->pressEnd;
-    this->doubleClickIntervalStart = isDoubleClick ? millis() : this->doubleClickIntervalStart;
-}
-
-ButtonType Button::buttonStateService()
-{
-    return ((this->buttonState == UNKNOWN || this->buttonState == NO_PRESS) && this->pressCount % 2 == 0) || ((this->buttonState == DOUBLE_PRESS) && this->pressCount % 2 == 0) ? SINGLE_PRESS
-           : ((this->buttonState == SINGLE_PRESS) && this->pressCount % 2 == 0)                                                                                                 ? NO_PRESS
-           : (this->pressCount % 2 == 1 && this->buttonState == SINGLE_PRESS && millis() - this->doubleClickIntervalStart < this->DOUBLE_CLICK_INTERVAL)                        ? DOUBLE_PRESS
-           : ((this->pressCount % 2 == 1) && this->pressEnd - this->pressStart > this->RESET_INTERVAL)                                                                          ? RESET
-                                                                                                                                                                                : this->buttonState;
-}
 
 Button::~Button()
 {

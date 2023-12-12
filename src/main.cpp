@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include <WiFiNINA.h>
 #include <SPI.h>
+#include <WiFiNINA.h>
 
 #include "board.hpp"
 #include "network.hpp"
@@ -49,15 +49,34 @@ void setup()
 
 void loop()
 {
-  board->updateButtonState();
+  auto timeLeft = board->checkTimer();
+  char* timeLeftChar = (char*)calloc(16, sizeof(char));
+  sprintf(timeLeftChar, "Time left: %02d", timeLeft);
+  free(timeLeftChar);
+  board->setDisplayLine(1, "Hello World!");
+  board->setDisplayLine(2, timeLeftChar);
   auto buttonState = board->getButtonState();
   if (buttonState == ButtonType::DOUBLE_PRESS)
   {
     board->solidLedRing(0xFF0000);
+    board->setDisplayLine(5, "TIMER PAUSED!");
+    board->setDisplayLine(3, "timer==paused");
+    board->pauseTimer();
   }
   else if (buttonState == ButtonType::SINGLE_PRESS)
   {
     board->solidLedRing(0x0000ff);
+    Timer timer = board->timer;
+    if (timer.isRunning || timer.isPaused) {
+      board->setDisplayLine(5, "TIMER STOPPED!");
+      board->setDisplayLine(3, "timer==stopped");
+      board->stopTimer();
+    }
+    else {
+      board->setDisplayLine(5, "TIMER STARTED!");
+      board->setDisplayLine(3, "timer==running");
+      board->startTimer();
+    }
   }
   else if (buttonState == ButtonType::LONG_PRESS)
   {
@@ -67,9 +86,4 @@ void loop()
   {
     board->solidLedRing(0x000000);
   }
-  else if (buttonState == ButtonType::RESET)
-  {
-    board->reboot();
-  }
 }
-
