@@ -17,14 +17,9 @@ Board::Board(
     joystick = new Joystick(joystickXPin, joystickYPin);
 }
 
-void Board::updateButtonState()
-{
-    button->updateButtonState();
-}
-
 ButtonType Board::getButtonState()
 {
-    return button->getButtonState();
+    return button->checkButtonState();
 }
 
 void Board::solidLedRing(const uint32_t &color)
@@ -86,46 +81,32 @@ void Board::setTimer(const uint16_t &time, const uint16_t &pause)
 {
     timer.timeBuffer = time;
     timer.pauseBuffer = pause;
-    timer.isPaused = false;
-    timer.isRunning = false;
-    timer.isFinished = false;
 }
 
-void Board::startTimer()
-{
-    timer.isRunning = true;
-    timer.isPaused = false;
-    timer.isFinished = false;
-}
-
-void Board::pauseTimer()
-{
-    timer.isPaused = true;
-    timer.isRunning = false;
-    timer.isFinished = false;
-}
+void Board::startTimer() { timer.state = TIMER_STARTED; }
+void Board::pauseTimer() { timer.state = TIMER_PAUSED; }
+void Board::stopTimer() { timer.state = TIMER_STOPPED; }
 
 uint8_t Board::checkTimer()
 {
-    if (timer.isFinished)
-        return 0;
+    auto timerState = timer.state;
 
-    if (timer.isRunning)
+    if (timerState == TIMER_STARTED)
     {
         if (timer.timeBuffer > 0)
         {
             timer.timeBuffer--;
-            return timer.timeBuffer / 60;
+            return timer.timeBuffer / 60; // return the time left in minutes
         }
-        else
+        else // timer has finished the allocated time
         {
-            timer.isRunning = false;
-            timer.isFinished = true;
-            timer.timesCompleted++;
+            display->setLineText(3, "ENJOY YOUR PAUSE!"); // TODO: speak with team about this.
+            timer.state = TIMER_PAUSED; // automatically switch the timer to the pause bank.
             return 0;
         }
     }
-    else if (timer.isPaused)
+
+    if (timerState == TIMER_PAUSED)
     {
         if (timer.pauseBuffer > 0)
         {
@@ -134,10 +115,17 @@ uint8_t Board::checkTimer()
         }
         else
         {
-            timer.isPaused = false;
-            timer.isRunning = true;
+            timer.timesCompleted++;
+            display->setLineText(3, "PAUSE IS OVER!"); // TODO: speak with team about this.
+            timer.state = TIMER_STOPPED;
             return timer.timeBuffer / 60;
         }
+    }
+    if (timerState == TIMER_STOPPED)
+    {
+        buzzer->on();
+        display->setLineText(6, "TIMER FINISHED!"); // TODO: speak with team about this.
+        return 0;
     }
 
     return 0;

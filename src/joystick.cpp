@@ -33,7 +33,7 @@ JoystickDirection Joystick::getDirection() {
         else if (x > middleUpperLimit) { return RIGHT; }
     }
 
-    return UNKNOWN;
+    return CENTER;
 }
 
 JoystickCoords Joystick::getCoords() {

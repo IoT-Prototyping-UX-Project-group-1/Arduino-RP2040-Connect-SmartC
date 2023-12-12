@@ -5,8 +5,7 @@ enum JoystickDirection {
     DOWN,
     LEFT,
     RIGHT,
-    CENTER,
-    UNKNOWN
+    CENTER
 };
 
 typedef struct {
