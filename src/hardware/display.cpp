@@ -18,6 +18,13 @@ void Display::clearDisplay() {
     display->clear();
 }
 
+void Display::flushLine(const uint8_t &lineNumber) {
+    display->setDrawColor(0);
+    display->drawBox(0, linePosition[lineNumber], 128, 16);
+    display->setDrawColor(1);
+    display->sendBuffer();
+}
+
 Display::~Display() {
     delete display;
 }

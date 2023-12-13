@@ -57,6 +57,7 @@ public:
     void displayTime(const uint8_t &lineNumber);
     void displayDate(const uint8_t &lineNumber);
     void setDisplayLine(const uint8_t &lineNumber, const char *text);
+    void flushDisplayLine(const uint8_t &lineNumber);
 
     /* Joystick methods */
     JoystickDirection getJoystickDirection();

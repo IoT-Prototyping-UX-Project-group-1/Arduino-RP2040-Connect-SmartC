@@ -67,6 +67,11 @@ void Board::setDisplayLine(const uint8_t &lineNumber, const char *text)
     display->setLineText(lineNumber, text);
 }
 
+void Board::flushDisplayLine(const uint8_t &lineNumber)
+{
+    display->flushLine(lineNumber);
+}
+
 JoystickDirection Board::getJoystickDirection()
 {
     return joystick->getDirection();
