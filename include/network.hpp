@@ -1,37 +1,41 @@
 #include <Arduino.h>
+#include <WiFiNINA.h>
 
-#define SSID "iOtE"
-#define PASS "sgri*+x/esdfi17ao77#=3o"
+#define SSID "Turris"
+#define PASS "Omnia1234"
 
-
-void printNetworkInformation()
+typedef struct Time
 {
-  Serial.print("IPv4 address: ");
-  Serial.println(WiFi.localIP());
+  uint8_t hour;
+  uint8_t minute;
+  uint8_t second;
+};
 
-  Serial.print("Subnet Mask: ");
-  Serial.println(WiFi.subnetMask());
+enum WeatherType
+{
+  CLOUDS,
+  RAIN,
+  SNOW,
+  CLEAR
+};
 
-  Serial.print("Gateway IP: ");
-  Serial.println(WiFi.gatewayIP());
+typedef struct WeatherInformation
+{
+  Time time;
+  float temperature;
+  float humidity;
+  WeatherType weatherType;
+};
 
-  Serial.print("Signal Strength: ");
-  Serial.println(WiFi.RSSI());
+class HttpClient
+{
+private:
+  char *host = NULL;
+  char *path = NULL;
+  uint16_t port;
 
-  byte routerMac[6];
-  WiFi.BSSID(routerMac);
-  Serial.print("Router MAC: ");
-  for (int i = 5; i >= 0; i--)
-  {
-    if (routerMac[i] < 0x10)
-    {
-      Serial.print("0");
-    }
-    Serial.print(routerMac[i], HEX);
-    if (i > 0)
-    {
-      Serial.print(":");
-    }
-  }
-  Serial.println();
-}
+public:
+  HttpClient(const char *host, const char *path, const uint16_t port = 80);
+  const char *fetch(const uint32_t fetchSize = 16*1024 /*process only ~16KB of data*/);
+  ~HttpClient();
+};

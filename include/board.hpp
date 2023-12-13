@@ -1,13 +1,14 @@
 #include <Arduino.h>
-#include <time.h>
 #include <WiFiNINA.h>
+#include <time.h>
 
 #include "button.hpp"
 #include "buzzer.hpp"
-#include "vibration.hpp"
-#include "ledRing.hpp"
-#include "joystick.hpp"
 #include "display.hpp"
+#include "joystick.hpp"
+#include "ledRing.hpp"
+#include "vibration.hpp"
+#include "network.hpp"
 
 enum TimerState
 {
@@ -26,12 +27,13 @@ typedef struct
 class Board
 {
 private:
-    Button *button;
-    Buzzer *buzzer;
-    Vibration *vibration;
-    LedRing *ledRing;
-    Display *display;
-    Joystick *joystick;
+    Button *button              = NULL;
+    Buzzer *buzzer              = NULL;
+    Vibration *vibration        = NULL;
+    LedRing *ledRing            = NULL;
+    Display *display            = NULL;
+    Joystick *joystick          = NULL;
+    HttpClient *httpClient      = NULL;
 
 public:
     Timer timer;
@@ -67,8 +69,10 @@ public:
     void stopTimer();
     uint8_t checkTimer();
 
-    /* Reset Method */
-    void reboot();
+    /* HTTP Client methods */
+    void connectToWiFi(const char *ssid, const char *pass);
+    void setHttpClient(const char *host, const char *path, const uint16_t port = 80);
+    const char *fetch(const uint32_t fetchSize = 16 * 1024 /*process only ~16KB of data*/);
 
     ~Board();
 };

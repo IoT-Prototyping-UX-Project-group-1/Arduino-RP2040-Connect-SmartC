@@ -101,7 +101,7 @@ uint8_t Board::checkTimer()
         else // timer has finished the allocated time
         {
             display->setLineText(3, "ENJOY YOUR PAUSE!"); // TODO: speak with team about this.
-            timer.state = TIMER_PAUSED; // automatically switch the timer to the pause bank.
+            timer.state = TIMER_PAUSED;                   // automatically switch the timer to the pause bank.
             return 0;
         }
     }
@@ -131,10 +131,66 @@ uint8_t Board::checkTimer()
     return 0;
 }
 
-void Board::reboot()
+void Board::connectToWiFi(const char* ssid, const char* pass) {
+    delay(2500);
+    Serial.println("Trying to connect to Wi-Fi, please wait...");
+    int wifiStatus = WL_IDLE_STATUS;
+    do
+    {
+        Serial.print("Attempting to connect to SSID: ");
+        Serial.println(ssid);
+        Serial.print("The provided PASS is: ");
+        Serial.println(pass);
+
+        wifiStatus = WiFi.begin(ssid, pass);
+        delay(10000);
+    } while (wifiStatus != WL_CONNECTED);
+
+    if (wifiStatus == WL_CONNECTED)
+    {
+        Serial.println("Connected to wifi");
+        Serial.print("IPv4 address: ");
+        Serial.println(WiFi.localIP());
+
+        Serial.print("Subnet Mask: ");
+        Serial.println(WiFi.subnetMask());
+
+        Serial.print("Gateway IP: ");
+        Serial.println(WiFi.gatewayIP());
+
+        Serial.print("Signal Strength: ");
+        Serial.println(WiFi.RSSI());
+
+        byte routerMac[6];
+        WiFi.BSSID(routerMac);
+        Serial.print("Router MAC: ");
+        for (int i = 5; i >= 0; i--)
+        {
+            if (routerMac[i] < 0x10)
+            {
+            Serial.print("0");
+            }
+            Serial.print(routerMac[i], HEX);
+            if (i > 0)
+            {
+            Serial.print(":");
+            }
+        }
+        Serial.println();
+    }
+}
+
+void Board::setHttpClient(const char *host, const char *path, const uint16_t port)
 {
-    // reset_usb_boot(1 << digitalPinToPinName(LED_BUILTIN), 0);
-    _ontouch1200bps_();
+    if (httpClient != NULL) delete httpClient;
+    httpClient = new HttpClient(host, path, port);
+}
+
+const char *Board::fetch(const uint32_t fetchSize)
+{
+    return httpClient != NULL
+    ? httpClient->fetch(fetchSize)
+    : "You need to setup the HTTP client first.";
 }
 
 Board::~Board()
@@ -149,4 +205,8 @@ Board::~Board()
         delete ledRing;
     if (display != nullptr)
         delete display;
+    if (joystick != nullptr)
+        delete joystick;
+    if (httpClient != nullptr)
+        delete httpClient;
 }
