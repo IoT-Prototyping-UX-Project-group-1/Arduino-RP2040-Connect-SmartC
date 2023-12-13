@@ -16,10 +16,10 @@ typedef struct WeatherForecast {
 };
 
 typedef struct WeatherInformation {
-    char* city                          = NULL;
-    WeatherForecast* firstForecast       = NULL;
-    WeatherForecast* secondForecast     = NULL;
-    WeatherForecast* thirdForecast      = NULL;
+    char* city;
+    WeatherForecast firstForecast;
+    WeatherForecast secondForecast;
+    WeatherForecast thirdForecast;
 };
 
-bool convertOpenWeatherToWeatherInformationStruct(const char* response, WeatherInformation& weatherInformation);
+void convertOpenWeatherToWeatherInformationStruct(char* response, WeatherInformation &weatherInformation);

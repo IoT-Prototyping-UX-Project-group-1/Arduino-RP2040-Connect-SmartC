@@ -13,6 +13,6 @@ private:
 
 public:
   HttpClient(const char *host, const char *path, const uint16_t port = 80);
-  const char *fetch(const uint32_t fetchSize = 16*1024 /*process only ~16KB of data*/);
+  char* fetch(const uint32_t fetchSize = 16*1024 /*process only ~16KB of data*/);
   ~HttpClient();
 };

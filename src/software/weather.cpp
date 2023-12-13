@@ -1,68 +1,71 @@
-#include <ArduinoJson.h>
 #include "software/weather.hpp"
+#include <ArduinoJson.h>
 
-void ConvertWeatherStringToWeatherEnum(const char* weatherString, WeatherState& weatherState) {
-    if (strcmp(weatherString, "Clouds") == 0) weatherState = CLOUDY;
-    else if (strcmp(weatherString, "Rain") == 0) weatherState = RAINY;
-    else if (strcmp(weatherString, "Snow") == 0) weatherState = SNOWY;
-    else weatherState = SUNNY;
+void ConvertWeatherStringToWeatherEnum(const char *weatherString, WeatherState &weatherState)
+{
+    if (strcmp(weatherString, "Clouds") == 0)
+        weatherState = CLOUDY;
+    else if (strcmp(weatherString, "Rain") == 0)
+        weatherState = RAINY;
+    else if (strcmp(weatherString, "Snow") == 0)
+        weatherState = SNOWY;
+    else
+        weatherState = SUNNY;
 };
 
+void convertOpenWeatherToWeatherInformationStruct(char* response, WeatherInformation &weatherInformation)
+{
+    // Create filter to extract just what we require from the JSON response:
+    StaticJsonDocument<256 /* Bytes */> filter;
 
-bool convertOpenWeatherToWeatherInformationStruct(const char* response, WeatherInformation& weatherInformation) {
+    JsonObject filter_list_0 = filter["list"].createNestedObject();
+    filter_list_0["dt"] = true;
+
+    JsonObject filter_list_0_main = filter_list_0.createNestedObject("main");
+    filter_list_0_main["temp"] = true;
+    filter_list_0_main["humidity"] = true;
+    filter_list_0["weather"][0]["main"] = true;
+    filter_list_0["wind"]["speed"] = true;
+    filter["city"]["name"] = true;
 
     // Step 1: Convert the response to a JSON object
-    StaticJsonDocument<1024* 16 /* 16KB */> jsonDocument;
-    DeserializationError error = deserializeJson(jsonDocument, response);
-    if (error) {
+    StaticJsonDocument<1024 * 10 /* 10KB */> jsonDocument;
+    DeserializationError error = deserializeJson(jsonDocument, response, strlen(response), DeserializationOption::Filter(filter));
+    if (error)
+    {
         Serial.print(F("deserializeJson() failed: "));
         Serial.println(error.c_str());
-        return false;
+        exit(1);
     }
+    else {
+        Serial.println("JSON successfully parsed.");
+        WeatherForecast firstForecast = weatherInformation.firstForecast;
+        WeatherForecast secondForecast = weatherInformation.secondForecast;
+        WeatherForecast thirdForecast = weatherInformation.thirdForecast;
 
-    // Step 2: Free the memory allocated for the previous weather information
-    if (weatherInformation.city != NULL)                free(weatherInformation.city);
-    if (weatherInformation.firstForecast != NULL)        free(weatherInformation.firstForecast);
-    if (weatherInformation.secondForecast != NULL)      free(weatherInformation.secondForecast);
-    if (weatherInformation.thirdForecast != NULL)       free(weatherInformation.thirdForecast);
+        // Step 2: Extract the data from the JSON object
+        weatherInformation.city = (char *)calloc(strlen(jsonDocument["city"]["name"])+1, sizeof(char));
+        strcpy(weatherInformation.city, jsonDocument["city"]["name"]);  // DevSkim: ignore DS185832
 
-    // Step 3: Allocate memory for the new weather information
-    weatherInformation.city = (char*)calloc(strlen(jsonDocument["city"]["name"]) + 1, sizeof(char));
-    weatherInformation.firstForecast = (WeatherForecast*)calloc(1, sizeof(WeatherForecast));
-    weatherInformation.secondForecast = (WeatherForecast*)calloc(1, sizeof(WeatherForecast));
-    weatherInformation.thirdForecast = (WeatherForecast*)calloc(1, sizeof(WeatherForecast));
+        // firstForecast.epochTime = jsonDocument["list"][0]["dt"];
+        // firstForecast.temperature = jsonDocument["list"][0]["main"]["temp"];
+        // firstForecast.humidity = jsonDocument["list"][0]["main"]["humidity"];
+        // ConvertWeatherStringToWeatherEnum(jsonDocument["list"][0]["weather"][0]["main"], firstForecast.weatherState);
 
-    // Step 4: Copy the city name
-    strcpy(weatherInformation.city, jsonDocument["city"]["name"]); // DevSkim: ignore DS185832
+        // secondForecast.epochTime = jsonDocument["list"][1]["dt"];
+        // secondForecast.temperature = jsonDocument["list"][1]["main"]["temp"];
+        // secondForecast.humidity = jsonDocument["list"][1]["main"]["humidity"];
+        // ConvertWeatherStringToWeatherEnum(jsonDocument["list"][1]["weather"][0]["main"], secondForecast.weatherState);
 
-    // Step 5a: Copy the first forecast
-    weatherInformation.firstForecast->epochTime = jsonDocument["list"][0]["dt"];
-    weatherInformation.firstForecast->temperature = jsonDocument["list"][0]["main"]["temp"];
-    weatherInformation.firstForecast->humidity = jsonDocument["list"][0]["main"]["humidity"];
-    weatherInformation.firstForecast->windSpeed = jsonDocument["list"][0]["wind"]["speed"];
-    const char* weatherType = jsonDocument["list"][0]["weather"][0]["main"];
-    ConvertWeatherStringToWeatherEnum(weatherType, weatherInformation.firstForecast->weatherState);
+        // thirdForecast.epochTime = jsonDocument["list"][2]["dt"];
+        // thirdForecast.temperature = jsonDocument["list"][2]["main"]["temp"];
+        // thirdForecast.humidity = jsonDocument["list"][2]["main"]["humidity"];
+        // ConvertWeatherStringToWeatherEnum(jsonDocument["list"][2]["weather"][0]["main"], thirdForecast.weatherState);
 
-    // Step 5b: Copy the second forecast
-    weatherInformation.secondForecast->epochTime = jsonDocument["list"][1]["dt"];
-    weatherInformation.secondForecast->temperature = jsonDocument["list"][1]["main"]["temp"];
-    weatherInformation.secondForecast->humidity = jsonDocument["list"][1]["main"]["humidity"];
-    weatherInformation.secondForecast->windSpeed = jsonDocument["list"][1]["wind"]["speed"];
-    weatherType = jsonDocument["list"][1]["weather"][0]["main"];
-    ConvertWeatherStringToWeatherEnum(weatherType, weatherInformation.secondForecast->weatherState);
+        // weatherInformation.firstForecast = firstForecast;
+        // weatherInformation.secondForecast = secondForecast;
+        // weatherInformation.thirdForecast = thirdForecast;
 
-    // Step 5c: Copy the third forecast
-    weatherInformation.thirdForecast->epochTime = jsonDocument["list"][2]["dt"];
-    weatherInformation.thirdForecast->temperature = jsonDocument["list"][2]["main"]["temp"];
-    weatherInformation.thirdForecast->humidity = jsonDocument["list"][2]["main"]["humidity"];
-    weatherInformation.thirdForecast->windSpeed = jsonDocument["list"][2]["wind"]["speed"];
-    weatherType = jsonDocument["list"][2]["weather"][0]["main"];
-    ConvertWeatherStringToWeatherEnum(weatherType, weatherInformation.thirdForecast->weatherState);
-
-    return true;
+        Serial.println("Weather information successfully converted.");
+    }
 }
-
-
-
-
-

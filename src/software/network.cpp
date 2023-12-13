@@ -9,12 +9,12 @@ HttpClient::HttpClient(const char *host, const char *path, const uint16_t port)
     this->port = port;
 }
 
-const char *HttpClient::fetch(const uint32_t fetchSize)
+char* HttpClient::fetch(const uint32_t fetchSize)
 {
     WiFiSSLClient client;
     if (!client.connect(host, port))
     {
-        Serial.println("Connection failed");
+        Serial.println("Connection to the provided hostname failed...");
         return NULL;
     }
 
@@ -27,12 +27,12 @@ const char *HttpClient::fetch(const uint32_t fetchSize)
         String line = client.readStringUntil('\n');
         if (line == "\r")
         {
-            Serial.println("Headers received.");
+            Serial.println("HTTP response received...");
             break;
         }
     }
 
-    char *returnValue = (char *)calloc(fetchSize, sizeof(char));
+    char *returnValue = (char *)calloc(fetchSize + 1, sizeof(char));
     while (client.available())
     {
         String line = client.readStringUntil('\n');

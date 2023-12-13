@@ -18,7 +18,6 @@
 uint16_t timeElapsedSinceLastFetch = 5 * 60 * 3;
 
 Board *board;
-WeatherInformation *weatherInformation = NULL;
 
 void setup()
 {
@@ -32,39 +31,17 @@ void setup()
 void loop()
 {
   timeElapsedSinceLastFetch++;
+  if (timeElapsedSinceLastFetch % 3 == 0) Serial.println(String("Time elapsed since last weather information fetch: " + String(timeElapsedSinceLastFetch / 3) + "s"));
 
-  if (timeElapsedSinceLastFetch % 3 == 0)
-    Serial.println(String("Time elapsed since last weather information fetch: " + String(timeElapsedSinceLastFetch / 3) + "s"));
   if (timeElapsedSinceLastFetch >= FETCH_INTERVAL)
   {
-    Serial.println("Resetting the refresh interval...");
+    Serial.println("Resetting the refresh interval (performing HTTP request)...");
     timeElapsedSinceLastFetch = 0;
-    const char *newWeatherInformation = board->fetch();
-    if (newWeatherInformation != NULL)
-    {
-      if (weatherInformation != NULL)
-      {
-        free(weatherInformation->city);
-        free(weatherInformation->firstForecast);
-        free(weatherInformation->secondForecast);
-        free(weatherInformation->thirdForecast);
-        free(weatherInformation);
-      }
-
-      weatherInformation = new WeatherInformation();
-      if (convertOpenWeatherToWeatherInformationStruct(newWeatherInformation, *weatherInformation))
-      {
-        Serial.println("Weather information successfully fetched and converted.");
-        String weatherInformationString = String("City: " + String(weatherInformation->city) + "\n");
-        Serial.println(weatherInformationString);
-        weatherInformationString = String("First forecast: " + String(weatherInformation->firstForecast->temperature) + "C, " + String(weatherInformation->firstForecast->humidity) + "%, " + String(weatherInformation->firstForecast->windSpeed) + "m/s, " + String(weatherInformation->firstForecast->weatherState) + "\n");
-        Serial.println(weatherInformationString);
-      }
-      else
-      {
-        Serial.println("Failed to convert the weather information.");
-      }
-    }
+    char* newWeatherInformation = board->fetch();
+    Serial.println("Weather information successfully fetched and converted.");
+    WeatherInformation weatherInformation;
+    convertOpenWeatherToWeatherInformationStruct(newWeatherInformation, weatherInformation);
+    Serial.println(String("City: " + String(weatherInformation.city)));
   }
 
   board->displayDate(6);

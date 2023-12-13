@@ -186,12 +186,7 @@ void Board::setHttpClient(const char *host, const char *path, const uint16_t por
     httpClient = new HttpClient(host, path, port);
 }
 
-const char *Board::fetch(const uint32_t fetchSize)
-{
-    return httpClient != NULL
-    ? httpClient->fetch(fetchSize)
-    : "You need to setup the HTTP client first.";
-}
+char* Board::fetch(const uint32_t fetchSize) { return httpClient->fetch(fetchSize); }
 
 Board::~Board()
 {
