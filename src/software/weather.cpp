@@ -38,32 +38,31 @@ void convertOpenWeatherToWeatherInformationStruct(char* response, WeatherInforma
     }
     else {
         Serial.println("JSON successfully parsed.");
-        WeatherForecast firstForecast = weatherInformation.firstForecast;
-        WeatherForecast secondForecast = weatherInformation.secondForecast;
-        WeatherForecast thirdForecast = weatherInformation.thirdForecast;
+        WeatherForecast& firstForecast = weatherInformation.firstForecast;
+        WeatherForecast& secondForecast = weatherInformation.secondForecast;
+        WeatherForecast& thirdForecast = weatherInformation.thirdForecast;
 
         // Step 2: Extract the data from the JSON object
         weatherInformation.city = (char *)calloc(strlen(jsonDocument["city"]["name"])+1, sizeof(char));
         strcpy(weatherInformation.city, jsonDocument["city"]["name"]);  // DevSkim: ignore DS185832
 
-        // firstForecast.epochTime = jsonDocument["list"][0]["dt"];
-        // firstForecast.temperature = jsonDocument["list"][0]["main"]["temp"];
-        // firstForecast.humidity = jsonDocument["list"][0]["main"]["humidity"];
-        // ConvertWeatherStringToWeatherEnum(jsonDocument["list"][0]["weather"][0]["main"], firstForecast.weatherState);
+        firstForecast.epochTime = jsonDocument["list"][0]["dt"];
+        firstForecast.temperature = jsonDocument["list"][0]["main"]["temp"];
+        firstForecast.humidity = jsonDocument["list"][0]["main"]["humidity"];
+        Serial.println("#1 -> Temperature: " + String(firstForecast.temperature));
+        Serial.println("#1 -> Humidity: " + String(firstForecast.humidity));
+        
+        secondForecast.epochTime = jsonDocument["list"][1]["dt"];
+        secondForecast.temperature = jsonDocument["list"][1]["main"]["temp"];
+        secondForecast.humidity = jsonDocument["list"][1]["main"]["humidity"];
+        Serial.println("#2 -> Temperature: " + String(secondForecast.temperature));
+        Serial.println("#2 -> Humidity: " + String(secondForecast.humidity));
 
-        // secondForecast.epochTime = jsonDocument["list"][1]["dt"];
-        // secondForecast.temperature = jsonDocument["list"][1]["main"]["temp"];
-        // secondForecast.humidity = jsonDocument["list"][1]["main"]["humidity"];
-        // ConvertWeatherStringToWeatherEnum(jsonDocument["list"][1]["weather"][0]["main"], secondForecast.weatherState);
-
-        // thirdForecast.epochTime = jsonDocument["list"][2]["dt"];
-        // thirdForecast.temperature = jsonDocument["list"][2]["main"]["temp"];
-        // thirdForecast.humidity = jsonDocument["list"][2]["main"]["humidity"];
-        // ConvertWeatherStringToWeatherEnum(jsonDocument["list"][2]["weather"][0]["main"], thirdForecast.weatherState);
-
-        // weatherInformation.firstForecast = firstForecast;
-        // weatherInformation.secondForecast = secondForecast;
-        // weatherInformation.thirdForecast = thirdForecast;
+        thirdForecast.epochTime = jsonDocument["list"][2]["dt"];
+        thirdForecast.temperature = jsonDocument["list"][2]["main"]["temp"];
+        thirdForecast.humidity = jsonDocument["list"][2]["main"]["humidity"];
+        Serial.println("#3 -> Temperature: " + String(thirdForecast.temperature));
+        Serial.println("#3 -> Humidity: " + String(thirdForecast.humidity));
 
         Serial.println("Weather information successfully converted.");
     }
