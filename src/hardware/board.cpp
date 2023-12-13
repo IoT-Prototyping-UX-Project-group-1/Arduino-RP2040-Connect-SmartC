@@ -1,4 +1,4 @@
-#include "board.hpp"
+#include "hardware/board.hpp"
 #include "pico/bootrom.h"
 
 Board::Board(

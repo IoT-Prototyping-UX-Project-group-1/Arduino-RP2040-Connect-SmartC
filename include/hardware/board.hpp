@@ -8,7 +8,7 @@
 #include "joystick.hpp"
 #include "ledRing.hpp"
 #include "vibration.hpp"
-#include "network.hpp"
+#include "../software/network.hpp"
 
 enum TimerState
 {

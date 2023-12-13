@@ -1,4 +1,4 @@
-#include "vibration.hpp"
+#include "hardware/vibration.hpp"
 
 Vibration::Vibration(uint8_t pin)
 {

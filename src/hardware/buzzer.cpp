@@ -1,4 +1,4 @@
-#include "buzzer.hpp"
+#include "hardware/buzzer.hpp"
 
 Buzzer::Buzzer(uint8_t pin) {
     this->pin = pin;

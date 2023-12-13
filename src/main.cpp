@@ -2,12 +2,13 @@
 #include <SPI.h>
 #include <WiFiNINA.h>
 
-#include "board.hpp"
+#include "hardware/board.hpp"
+#include "software/weather.hpp"
 
-#define BTNLED_PIN 2     // D2
-#define BUTTON_PIN 3     // D2
-#define LED_RING_PIN 16  // D4
-#define BUZZER_PIN 7     // D6
+#define BTNLED_PIN 2    // D2
+#define BUTTON_PIN 3    // D2
+#define LED_RING_PIN 16 // D4
+#define BUZZER_PIN 7    // D6
 #define VIBRATION_PIN A2
 
 #define JOYSTICK_X_PIN 0
@@ -32,7 +33,8 @@ void loop()
 {
   timeElapsedSinceLastFetch++;
 
-  if (timeElapsedSinceLastFetch % 3 == 0 ) Serial.println(String("Time elapsed since last weather information fetch: " + String(timeElapsedSinceLastFetch / 3) + "s"));
+  if (timeElapsedSinceLastFetch % 3 == 0)
+    Serial.println(String("Time elapsed since last weather information fetch: " + String(timeElapsedSinceLastFetch / 3) + "s"));
   if (timeElapsedSinceLastFetch >= FETCH_INTERVAL)
   {
     Serial.println("Resetting the refresh interval...");
@@ -41,8 +43,27 @@ void loop()
     if (newWeatherInformation != NULL)
     {
       if (weatherInformation != NULL)
+      {
+        free(weatherInformation->city);
+        free(weatherInformation->firstForecast);
+        free(weatherInformation->secondForecast);
+        free(weatherInformation->thirdForecast);
         free(weatherInformation);
-      
+      }
+
+      weatherInformation = new WeatherInformation();
+      if (convertOpenWeatherToWeatherInformationStruct(newWeatherInformation, *weatherInformation))
+      {
+        Serial.println("Weather information successfully fetched and converted.");
+        String weatherInformationString = String("City: " + String(weatherInformation->city) + "\n");
+        Serial.println(weatherInformationString);
+        weatherInformationString = String("First forecast: " + String(weatherInformation->firstForecast->temperature) + "C, " + String(weatherInformation->firstForecast->humidity) + "%, " + String(weatherInformation->firstForecast->windSpeed) + "m/s, " + String(weatherInformation->firstForecast->weatherState) + "\n");
+        Serial.println(weatherInformationString);
+      }
+      else
+      {
+        Serial.println("Failed to convert the weather information.");
+      }
     }
   }
 

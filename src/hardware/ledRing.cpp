@@ -1,4 +1,4 @@
-#include "ledRing.hpp"
+#include "hardware/ledRing.hpp"
 
 LedRing::LedRing(uint16_t numberOfPixels, uint16_t pin) {
     ledRing = new Adafruit_NeoPixel(numberOfPixels, pin, NEO_GRB + NEO_KHZ800);

@@ -4,29 +4,6 @@
 #define SSID "Turris"
 #define PASS "Omnia1234"
 
-typedef struct Time
-{
-  uint8_t hour;
-  uint8_t minute;
-  uint8_t second;
-};
-
-enum WeatherType
-{
-  CLOUDS,
-  RAIN,
-  SNOW,
-  CLEAR
-};
-
-typedef struct WeatherInformation
-{
-  Time time;
-  float temperature;
-  float humidity;
-  WeatherType weatherType;
-};
-
 class HttpClient
 {
 private:

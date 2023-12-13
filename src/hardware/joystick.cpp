@@ -1,4 +1,4 @@
-#include "joystick.hpp"
+#include "hardware/joystick.hpp"
 
 Joystick::Joystick(uint8_t xPin, uint8_t yPin) {
     this->xPin = xPin;
