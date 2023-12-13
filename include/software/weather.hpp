@@ -7,19 +7,19 @@ enum WeatherState {
     SNOWY
 };
 
-typedef struct WeatherForecast {
+typedef struct {
     time_t epochTime;
     float temperature;
     float humidity;
     float windSpeed;
     WeatherState weatherState;
-};
+} WeatherForecast;
 
-typedef struct WeatherInformation {
+typedef struct {
     char* city;
     WeatherForecast firstForecast;
     WeatherForecast secondForecast;
     WeatherForecast thirdForecast;
-};
+} WeatherInformation;
 
 void convertOpenWeatherToWeatherInformationStruct(char* response, WeatherInformation &weatherInformation);

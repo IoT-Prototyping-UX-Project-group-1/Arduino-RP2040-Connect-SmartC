@@ -39,6 +39,7 @@ char* HttpClient::fetch(const uint32_t fetchSize)
         strcat(returnValue, line.c_str()); // DevSkim: ignore DS141863
     }
 
+    client.flush();
     client.stop();
     return returnValue;
 }
