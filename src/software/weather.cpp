@@ -35,7 +35,6 @@ void convertOpenWeatherToWeatherInformationStruct(char* response, WeatherInforma
     {
         Serial.print(F("deserializeJson() failed: "));
         Serial.println(error.c_str());
-        exit(1);
     }
     else {
         Serial.println("JSON successfully parsed.");
