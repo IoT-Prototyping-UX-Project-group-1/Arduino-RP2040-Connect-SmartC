@@ -47,3 +47,14 @@ void loop()
   board->displayDate(6);
   board->displayTime(7);
 }
+
+
+void setup1() {
+  delay(5000);
+  Serial.printf("Core 1: Standing by...\n");
+}
+
+void loop1() {
+  delay(500);
+  Serial.printf("Core 1: Hello world!\n");
+}
