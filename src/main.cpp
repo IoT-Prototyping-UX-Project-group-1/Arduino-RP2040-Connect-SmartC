@@ -14,8 +14,8 @@
 #define JOYSTICK_X_PIN 0
 #define JOYSTICK_Y_PIN 1
 
-#define FETCH_INTERVAL 5 /* * 60*/ * 3 // 3 loop iterations = 1 real life second. 5 minutes = 5 * 60 * 3.
-uint16_t timeElapsedSinceLastFetch = 5 * 60 * 3;
+#define FETCH_INTERVAL 1 * 20 * 3 // 3 loop iterations = 1 real life second. 5 minutes = 5 * 60 * 3.
+uint16_t timeElapsedSinceLastFetch = 1 * 20 * 3;
 
 Board *board;
 
@@ -45,6 +45,7 @@ void loop()
     Serial.println(String("City: " + String(weatherInformation.city)));
   }
 
+
   board->displayDate(6);
   board->displayTime(7);
 }
@@ -56,6 +57,6 @@ void setup1() {
 }
 
 void loop1() {
-  delay(500);
-  Serial.printf("Core 1: Hello world!\n");
+  delay(12000);
+  Serial.println("Core 1: Waited for 12 seconds...");
 }
