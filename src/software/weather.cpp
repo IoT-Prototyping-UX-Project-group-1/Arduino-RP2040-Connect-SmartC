@@ -81,19 +81,15 @@ void convertOpenWeatherToWeatherInformationStruct(char *response, WeatherInforma
         char *weatherMain = jsonDocument["list"][0]["weather"][0]["main"];
         char *weatherDescription = jsonDocument["list"][0]["weather"][0]["description"];
 
-        // firstForecast.temperatureState = feelsLike < 1 ? FROST : feelsLike < 10 ? COLD
-        //                                                      : feelsLike < 17   ? MODERATE
-        //                                                      : feelsLike < 27   ? WARM
-        //                                                                         : HOT;
+        firstForecast.temperatureState = feelsLike < 1 ? FROST : feelsLike < 10 ? COLD
+                                                             : feelsLike < 17   ? MODERATE
+                                                             : feelsLike < 27   ? WARM
+                                                                                : HOT;
 
-        // firstForecast.weatherState = ConvertWeatherStringToWeatherStateEnum(cloudsAll, weatherMain, weatherDescription);
+        firstForecast.weatherState = ConvertWeatherStringToWeatherStateEnum(cloudsAll, weatherMain, weatherDescription);
 
-        // Serial.println("#1 -> Temperature State: " + String(firstForecast.temperatureState));
-        Serial.println("#1 -> Temperature State: " + String(feelsLike));
-        Serial.println("#1 -> Temperature State: " + String(cloudsAll));
-        Serial.println("#1 -> Temperature State: " + String(weatherMain));
-        Serial.println("#1 -> Temperature State: " + String(weatherDescription));
-        // Serial.println("#1 -> Weather State: " + String(firstForecast.weatherState));
+        Serial.println("#1 -> Temperature State: " + String(firstForecast.temperatureState));
+        Serial.println("#1 -> Weather State: " + String(firstForecast.weatherState));
 
         // secondForecast.epochTime = jsonDocument["list"][1]["dt"];
         // secondForecast.temperature = jsonDocument["list"][1]["main"]["temp"];
