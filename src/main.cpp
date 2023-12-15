@@ -18,6 +18,7 @@
 uint16_t timeElapsedSinceLastFetch = 1 * 20 * 3;
 
 Board *board;
+WeatherInformation weatherInformation;
 
 void setup()
 {
@@ -40,23 +41,23 @@ void loop()
     timeElapsedSinceLastFetch = 0;
     char *newWeatherInformation = board->fetch();
     Serial.println("Weather information successfully fetched and converted.");
-    WeatherInformation weatherInformation;
+
     convertOpenWeatherToWeatherInformationStruct(newWeatherInformation, weatherInformation);
     Serial.println(String("City: " + String(weatherInformation.city)));
   }
-
 
   board->displayDate(6);
   board->displayTime(7);
 }
 
-
-void setup1() {
+void setup1()
+{
   delay(5000);
   Serial.printf("Core 1: Standing by...\n");
 }
 
-void loop1() {
+void loop1()
+{
   delay(12000);
   Serial.println("Core 1: Waited for 12 seconds...");
 }

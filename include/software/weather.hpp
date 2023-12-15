@@ -1,25 +1,39 @@
 #include <Arduino.h>
 
-enum WeatherState {
+enum WeatherState
+{
+    CLEAR_SKY,
+    FEW_CLOUDS,
     CLOUDY,
+    LIGHT_RAIN,
     RAINY,
-    SUNNY,
+    HEAVY_RAIN,
+    MISTY,
     SNOWY
 };
 
-typedef struct {
+enum TemperatureState
+{
+    FROST,
+    COLD,
+    MODERATE,
+    WARM,
+    HOT
+};
+
+typedef struct
+{
     time_t epochTime;
-    float temperature;
-    float humidity;
-    float windSpeed;
+    TemperatureState temperatureState;
     WeatherState weatherState;
 } WeatherForecast;
 
-typedef struct {
-    char* city;
+typedef struct
+{
+    char *city;
     WeatherForecast firstForecast;
     WeatherForecast secondForecast;
     WeatherForecast thirdForecast;
 } WeatherInformation;
 
-void convertOpenWeatherToWeatherInformationStruct(char* response, WeatherInformation &weatherInformation);
+void convertOpenWeatherToWeatherInformationStruct(char *response, WeatherInformation &weatherInformation);
