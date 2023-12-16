@@ -2,23 +2,23 @@
 
 enum WeatherState
 {
-    CLEAR_SKY,
-    FEW_CLOUDS,
-    CLOUDY,
-    LIGHT_RAIN,
-    RAINY,
-    HEAVY_RAIN,
-    MISTY,
-    SNOWY
+    CLEAR_SKY,  // 0
+    FEW_CLOUDS, // 1
+    CLOUDY,     // 2
+    LIGHT_RAIN, // 3
+    RAINY,      // 4
+    HEAVY_RAIN, // 5
+    MISTY,      // 6
+    SNOWY       // 7
 };
 
 enum TemperatureState
 {
-    FROST,
-    COLD,
-    MODERATE,
-    WARM,
-    HOT
+    FROST,    // 0
+    COLD,     // 1
+    MODERATE, // 2
+    WARM,     // 3
+    HOT       // 4
 };
 
 typedef struct
