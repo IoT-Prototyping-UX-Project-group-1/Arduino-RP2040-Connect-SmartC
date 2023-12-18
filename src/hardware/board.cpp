@@ -1,4 +1,4 @@
-#include "board.hpp"
+#include "hardware/board.hpp"
 #include "pico/bootrom.h"
 
 Board::Board(
@@ -17,14 +17,9 @@ Board::Board(
     joystick = new Joystick(joystickXPin, joystickYPin);
 }
 
-void Board::updateButtonState()
-{
-    button->updateButtonState();
-}
-
 ButtonType Board::getButtonState()
 {
-    return button->getButtonState();
+    return button->checkButtonState();
 }
 
 void Board::solidLedRing(const uint32_t &color)
@@ -35,6 +30,16 @@ void Board::solidLedRing(const uint32_t &color)
 void Board::flashLedRing(const uint32_t &color, const uint8_t &times, const uint8_t &waitTime)
 {
     ledRing->flashColor(color, times, waitTime);
+}
+
+void Board::displayWeatherInformation(const uint8_t &firstTempStateIndex, const uint8_t &firstWeatherStateIndex, const uint8_t &secTempStateIndex, const uint8_t &secWeatherStateIndex)
+{
+    ledRing->displayWeatherInformation(firstTempStateIndex, firstWeatherStateIndex, secTempStateIndex, secWeatherStateIndex);
+}
+
+void Board::displayTimerState(const uint8_t &timerState)
+{
+    ledRing->displayTimerState(timerState);
 }
 
 void Board::clearDisplay()
@@ -72,6 +77,11 @@ void Board::setDisplayLine(const uint8_t &lineNumber, const char *text)
     display->setLineText(lineNumber, text);
 }
 
+void Board::flushDisplayLine(const uint8_t &lineNumber)
+{
+    display->flushLine(lineNumber);
+}
+
 JoystickDirection Board::getJoystickDirection()
 {
     return joystick->getDirection();
@@ -86,46 +96,32 @@ void Board::setTimer(const uint16_t &time, const uint16_t &pause)
 {
     timer.timeBuffer = time;
     timer.pauseBuffer = pause;
-    timer.isPaused = false;
-    timer.isRunning = false;
-    timer.isFinished = false;
 }
 
-void Board::startTimer()
-{
-    timer.isRunning = true;
-    timer.isPaused = false;
-    timer.isFinished = false;
-}
-
-void Board::pauseTimer()
-{
-    timer.isPaused = true;
-    timer.isRunning = false;
-    timer.isFinished = false;
-}
+void Board::startTimer() { timer.state = TIMER_STARTED; }
+void Board::pauseTimer() { timer.state = TIMER_PAUSED; }
+void Board::stopTimer() { timer.state = TIMER_STOPPED; }
 
 uint8_t Board::checkTimer()
 {
-    if (timer.isFinished)
-        return 0;
+    auto timerState = timer.state;
 
-    if (timer.isRunning)
+    if (timerState == TIMER_STARTED)
     {
         if (timer.timeBuffer > 0)
         {
             timer.timeBuffer--;
-            return timer.timeBuffer / 60;
+            return timer.timeBuffer / 60; // return the time left in minutes
         }
-        else
+        else // timer has finished the allocated time
         {
-            timer.isRunning = false;
-            timer.isFinished = true;
-            timer.timesCompleted++;
+            display->setLineText(3, "ENJOY YOUR PAUSE!"); // TODO: speak with team about this.
+            timer.state = TIMER_PAUSED;                   // automatically switch the timer to the pause bank.
             return 0;
         }
     }
-    else if (timer.isPaused)
+
+    if (timerState == TIMER_PAUSED)
     {
         if (timer.pauseBuffer > 0)
         {
@@ -134,20 +130,52 @@ uint8_t Board::checkTimer()
         }
         else
         {
-            timer.isPaused = false;
-            timer.isRunning = true;
+            timer.timesCompleted++;
+            display->setLineText(3, "PAUSE IS OVER!"); // TODO: speak with team about this.
+            timer.state = TIMER_STOPPED;
             return timer.timeBuffer / 60;
         }
+    }
+    if (timerState == TIMER_STOPPED)
+    {
+        buzzer->on();
+        display->setLineText(6, "TIMER FINISHED!"); // TODO: speak with team about this.
+        return 0;
     }
 
     return 0;
 }
 
-void Board::reboot()
+void Board::connectToWiFi(const char *ssid, const char *pass)
 {
-    // reset_usb_boot(1 << digitalPinToPinName(LED_BUILTIN), 0);
-    _ontouch1200bps_();
+    delay(2500);
+    Serial.println("Trying to connect to Wi-Fi, please wait...");
+    int wifiStatus = WL_IDLE_STATUS;
+    do
+    {
+        Serial.print("Attempting to connect to SSID: ");
+        Serial.println(ssid);
+        Serial.print("The provided PASS is: ");
+        Serial.println(pass);
+
+        wifiStatus = WiFi.begin(ssid, pass);
+        delay(10000);
+    } while (wifiStatus != WL_CONNECTED);
+
+    if (wifiStatus == WL_CONNECTED)
+    {
+        Serial.println("Connected to wifi");
+    }
 }
+
+void Board::setHttpClient(const char *host, const char *path, const uint16_t port)
+{
+    if (httpClient != NULL)
+        delete httpClient;
+    httpClient = new HttpClient(host, path, port);
+}
+
+char *Board::fetch(const uint32_t fetchSize) { return httpClient->fetch(fetchSize); }
 
 Board::~Board()
 {
@@ -161,4 +189,8 @@ Board::~Board()
         delete ledRing;
     if (display != nullptr)
         delete display;
+    if (joystick != nullptr)
+        delete joystick;
+    if (httpClient != nullptr)
+        delete httpClient;
 }

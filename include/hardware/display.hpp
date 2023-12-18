@@ -12,5 +12,6 @@ public:
     Display();
     void setLineText(const uint8_t &lineNumber, const char *text);
     void clearDisplay();
+    void flushLine(const uint8_t &lineNumber);
     ~Display();
 };
