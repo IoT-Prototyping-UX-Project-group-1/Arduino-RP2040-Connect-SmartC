@@ -32,6 +32,16 @@ void Board::flashLedRing(const uint32_t &color, const uint8_t &times, const uint
     ledRing->flashColor(color, times, waitTime);
 }
 
+void Board::displayWeatherInformation(const uint8_t &firstTempStateIndex, const uint8_t &firstWeatherStateIndex, const uint8_t &secTempStateIndex, const uint8_t &secWeatherStateIndex)
+{
+    ledRing->displayWeatherInformation(firstTempStateIndex, firstWeatherStateIndex, secTempStateIndex, secWeatherStateIndex);
+}
+
+void Board::displayTimerState(const uint8_t &timerState)
+{
+    ledRing->displayTimerState(timerState);
+}
+
 void Board::clearDisplay()
 {
     display->clearDisplay();
@@ -136,7 +146,8 @@ uint8_t Board::checkTimer()
     return 0;
 }
 
-void Board::connectToWiFi(const char* ssid, const char* pass) {
+void Board::connectToWiFi(const char *ssid, const char *pass)
+{
     delay(2500);
     Serial.println("Trying to connect to Wi-Fi, please wait...");
     int wifiStatus = WL_IDLE_STATUS;
@@ -151,16 +162,20 @@ void Board::connectToWiFi(const char* ssid, const char* pass) {
         delay(10000);
     } while (wifiStatus != WL_CONNECTED);
 
-    if (wifiStatus == WL_CONNECTED) { Serial.println("Connected to wifi"); }
+    if (wifiStatus == WL_CONNECTED)
+    {
+        Serial.println("Connected to wifi");
+    }
 }
 
 void Board::setHttpClient(const char *host, const char *path, const uint16_t port)
 {
-    if (httpClient != NULL) delete httpClient;
+    if (httpClient != NULL)
+        delete httpClient;
     httpClient = new HttpClient(host, path, port);
 }
 
-char* Board::fetch(const uint32_t fetchSize) { return httpClient->fetch(fetchSize); }
+char *Board::fetch(const uint32_t fetchSize) { return httpClient->fetch(fetchSize); }
 
 Board::~Board()
 {
