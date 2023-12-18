@@ -27,13 +27,13 @@ typedef struct
 class Board
 {
 private:
-    Button *button              = NULL;
-    Buzzer *buzzer              = NULL;
-    Vibration *vibration        = NULL;
-    LedRing *ledRing            = NULL;
-    Display *display            = NULL;
-    Joystick *joystick          = NULL;
-    HttpClient *httpClient      = NULL;
+    Button *button = NULL;
+    Buzzer *buzzer = NULL;
+    Vibration *vibration = NULL;
+    LedRing *ledRing = NULL;
+    Display *display = NULL;
+    Joystick *joystick = NULL;
+    HttpClient *httpClient = NULL;
 
 public:
     Timer timer;
@@ -51,6 +51,8 @@ public:
     /* LED Ring methods */
     void solidLedRing(const uint32_t &color);
     void flashLedRing(const uint32_t &color, const uint8_t &times, const uint8_t &waitTime);
+    void displayWeatherInformation(const uint8_t &firstTempStateIndex, const uint8_t &firstWeatherStateIndex, const uint8_t &secTempStateIndex, const uint8_t &secWeatherStateIndex);
+    void displayTimerState(const uint8_t &timerState);
 
     /* OLED Display methods */
     void clearDisplay();
@@ -73,7 +75,7 @@ public:
     /* HTTP Client methods */
     void connectToWiFi(const char *ssid, const char *pass);
     void setHttpClient(const char *host, const char *path, const uint16_t port = 80);
-    char* fetch(const uint32_t fetchSize = 16 * 1024 /*process only ~16KB of data*/);
+    char *fetch(const uint32_t fetchSize = 16 * 1024 /*process only ~16KB of data*/);
 
     ~Board();
 };

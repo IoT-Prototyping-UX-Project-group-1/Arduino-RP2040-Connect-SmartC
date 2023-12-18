@@ -4,8 +4,8 @@
 // #define SSID "Turris"
 // #define PASS "Omnia1234"
 
-#define SSID "Turris"
-#define PASS "Omnia1234"
+#define SSID "iOtE"
+#define PASS "sgri*+x/esdfi17ao77#=3o"
 class HttpClient
 {
 private:

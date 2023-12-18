@@ -14,10 +14,13 @@
 #define JOYSTICK_X_PIN 0
 #define JOYSTICK_Y_PIN 1
 
-#define FETCH_INTERVAL 1 * 20 * 3 // 3 loop iterations = 1 real life second. 5 minutes = 5 * 60 * 3.
+// #define FETCH_INTERVAL 1 * 20 * 3 // 3 loop iterations = 1 real life second. 5 minutes = 5 * 60 * 3.
+uint16_t FETCH_INTERVAL = 1 * 10 * 3;        // 3 loop iterations = 1 real life second. 5 minutes = 5 * 60 * 3.
+uint16_t UPDATE_FETCH_INTERVAL = 5 * 60 * 3; // 3 loop iterations = 1 real life second. 5 minutes = 5 * 60 * 3.
 uint16_t timeElapsedSinceLastFetch = 1 * 20 * 3;
 
 Board *board;
+WeatherInformation weatherInformation;
 
 void setup()
 {
@@ -40,23 +43,31 @@ void loop()
     timeElapsedSinceLastFetch = 0;
     char *newWeatherInformation = board->fetch();
     Serial.println("Weather information successfully fetched and converted.");
-    WeatherInformation weatherInformation;
+
     convertOpenWeatherToWeatherInformationStruct(newWeatherInformation, weatherInformation);
     Serial.println(String("City: " + String(weatherInformation.city)));
   }
+  uint8_t firstForecastTemp = weatherInformation.firstForecast.temperatureState;
+  uint8_t firstForecastWeather = weatherInformation.firstForecast.weatherState;
+  uint8_t secForecastTemp = weatherInformation.secondForecast.temperatureState;
+  uint8_t secForecastWeather = weatherInformation.secondForecast.weatherState;
 
-
+  board->displayWeatherInformation(firstForecastTemp, firstForecastWeather, secForecastTemp, secForecastWeather);
+  board->displayTimerState(0);
   board->displayDate(6);
   board->displayTime(7);
+
+  FETCH_INTERVAL = UPDATE_FETCH_INTERVAL;
 }
 
-
-void setup1() {
-  delay(5000);
+void setup1()
+{
+  // delay(5000);
   Serial.printf("Core 1: Standing by...\n");
 }
 
-void loop1() {
-  delay(12000);
-  Serial.println("Core 1: Waited for 12 seconds...");
+void loop1()
+{
+  // delay(12000);
+  // Serial.println("Core 1: Waited for 12 seconds...");
 }
