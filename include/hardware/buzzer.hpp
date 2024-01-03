@@ -7,7 +7,7 @@ private:
 
 public:
     Buzzer(uint8_t pin);
-    void on();
+    void on(uint8_t power);
     void off();
     ~Buzzer();
 };

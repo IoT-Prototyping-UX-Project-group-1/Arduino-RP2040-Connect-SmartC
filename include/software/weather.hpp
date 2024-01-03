@@ -31,9 +31,10 @@ typedef struct
 typedef struct
 {
     char *city;
+    float feelsLike;
+    char *weather;
     WeatherForecast firstForecast;
     WeatherForecast secondForecast;
-    WeatherForecast thirdForecast;
 } WeatherInformation;
 
 void convertOpenWeatherToWeatherInformationStruct(char *response, WeatherInformation &weatherInformation);

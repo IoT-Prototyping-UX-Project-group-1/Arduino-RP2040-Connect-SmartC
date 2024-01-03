@@ -34,8 +34,8 @@ const uint32_t WHITE = 0xFFFFFF;       // COLD
 // Timer States
 const uint32_t PRODUCTIVITY = 0x008000; // GREEN
 const uint32_t OFF = 0x000000;          // BLACK
-const uint32_t PAUSE = 0xFF6347;        // TOMATO
-const uint32_t SUSPENDED = 0xFFC0CB;    // PINK
+const uint32_t PAUSE = 0xFF4500;        // ORANGERED
+const uint32_t SUSPENDED = 0xFF1493;    // DEEPPINK
 
 // Temperature States
 const uint32_t FROST = 0x0000FF;    // BLUE
@@ -52,7 +52,7 @@ const uint32_t LIGHT_RAIN = 0x4B0082; // INDIGO
 const uint32_t RAINY = 0x8A2BE2;      // BLUEVIOLET
 const uint32_t HEAVY_RAIN = 0x800000; // MAROON
 const uint32_t MISTY = 0x00FF00;      // LIME
-const uint32_t SNOWY = 0x00FFFF;      // SNOWYCYAN
+const uint32_t SNOWY = 0x7FFFD4;      // AQUAMARINE
 
 LedRing::LedRing(uint16_t numberOfPixels, uint16_t pin)
 {
@@ -88,19 +88,30 @@ void LedRing::flashColor(const uint32_t color, const uint8_t &times, const uint1
 
 void LedRing::displayWeatherInformation(const uint8_t &firstTempStateIndex, const uint8_t &firstWeatherStateIndex, const uint8_t &secTempStateIndex, const uint8_t &secWeatherStateIndex)
 {
-    // Serial.println(String("firstTempStateIndex -> " + String(firstTempStateIndex)));
-    // Serial.println(String("firstWeatherStateIndex -> " + String(firstWeatherStateIndex)));
-    // Serial.println(String("secTempStateIndex -> " + String(secTempStateIndex)));
-    // Serial.println(String("secWeatherStateIndex -> " + String(secWeatherStateIndex)));
+
     displayFirstForecast(firstTempStateIndex, firstWeatherStateIndex);
     displaySecondForecast(secTempStateIndex, secWeatherStateIndex);
 }
 
 void LedRing::displayTimerState(const uint8_t &timerState)
 {
-    // Serial.println(String("timerState: " + String(timerState)));
-    // ledRing->setPixelColor(18, PRODUCTIVITY);
-    ledRing->setPixelColor(18, GOLD);
+    switch (timerState)
+    {
+    case 0: // OFF state
+        ledRing->setPixelColor(18, OFF);
+        break;
+    case 1: // ON state
+        ledRing->setPixelColor(18, PRODUCTIVITY);
+        break;
+    case 2: // PAUSE state
+        ledRing->setPixelColor(18, PAUSE);
+        break;
+    case 3: // SUSPENDED state
+        ledRing->setPixelColor(18, SUSPENDED);
+        break;
+    default:
+        break;
+    }
     ledRing->setBrightness(10);
     ledRing->show();
 }

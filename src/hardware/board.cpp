@@ -6,7 +6,6 @@ Board::Board(
     uint8_t buttonLedPin,
     uint8_t buzzerPin,
     uint8_t vibrationPin,
-    uint8_t joystickXPin, uint8_t joystickYPin,
     uint8_t ledRingPin, uint8_t ledRingBulbs)
 {
     button = new Button(buttonPin, buttonLedPin);
@@ -14,12 +13,16 @@ Board::Board(
     vibration = new Vibration(vibrationPin);
     ledRing = new LedRing(ledRingBulbs, ledRingPin);
     display = new Display();
-    joystick = new Joystick(joystickXPin, joystickYPin);
+}
+
+void Board::updateButtonState()
+{
+    button->updateButtonState();
 }
 
 ButtonType Board::getButtonState()
 {
-    return button->checkButtonState();
+    return button->getButtonState();
 }
 
 void Board::solidLedRing(const uint32_t &color)
@@ -32,9 +35,22 @@ void Board::flashLedRing(const uint32_t &color, const uint8_t &times, const uint
     ledRing->flashColor(color, times, waitTime);
 }
 
-void Board::displayWeatherInformation(const uint8_t &firstTempStateIndex, const uint8_t &firstWeatherStateIndex, const uint8_t &secTempStateIndex, const uint8_t &secWeatherStateIndex)
+void Board::displayWeatherInformation(float temp, char *weather, const uint8_t &firstTempStateIndex, const uint8_t &firstWeatherStateIndex, const uint8_t &secTempStateIndex, const uint8_t &secWeatherStateIndex)
 {
     ledRing->displayWeatherInformation(firstTempStateIndex, firstWeatherStateIndex, secTempStateIndex, secWeatherStateIndex);
+
+    char *tempDisplay = (char *)calloc(1, sizeof(char));
+    char *weatherDisplay = (char *)calloc(21, sizeof(char));
+
+    sprintf(tempDisplay, "  Temp: %02f°C", temp);
+    sprintf(weatherDisplay, "  Weather: %s", weather);
+
+    display->setLineText(1, "# Next 3 hours:");
+    display->setLineText(2, tempDisplay);
+    display->setLineText(3, weatherDisplay);
+
+    free(tempDisplay);
+    free(weatherDisplay);
 }
 
 void Board::displayTimerState(const uint8_t &timerState)
@@ -82,68 +98,21 @@ void Board::flushDisplayLine(const uint8_t &lineNumber)
     display->flushLine(lineNumber);
 }
 
-JoystickDirection Board::getJoystickDirection()
+void Board::startTimer(uint8_t timerCounter)
 {
-    return joystick->getDirection();
+    displayTimerState(timerCounter < (timer.oneCycle - timer.restInterval) ? 1 : 2);
 }
-
-JoystickCoords Board::getJoystickCoords()
+void Board::pauseTimer()
 {
-    return joystick->getCoords();
+    displayTimerState(3);
+    buzzer->off();
+    vibration->off();
 }
-
-void Board::setTimer(const uint16_t &time, const uint16_t &pause)
+void Board::stopTimer()
 {
-    timer.timeBuffer = time;
-    timer.pauseBuffer = pause;
-}
-
-void Board::startTimer() { timer.state = TIMER_STARTED; }
-void Board::pauseTimer() { timer.state = TIMER_PAUSED; }
-void Board::stopTimer() { timer.state = TIMER_STOPPED; }
-
-uint8_t Board::checkTimer()
-{
-    auto timerState = timer.state;
-
-    if (timerState == TIMER_STARTED)
-    {
-        if (timer.timeBuffer > 0)
-        {
-            timer.timeBuffer--;
-            return timer.timeBuffer / 60; // return the time left in minutes
-        }
-        else // timer has finished the allocated time
-        {
-            display->setLineText(3, "ENJOY YOUR PAUSE!"); // TODO: speak with team about this.
-            timer.state = TIMER_PAUSED;                   // automatically switch the timer to the pause bank.
-            return 0;
-        }
-    }
-
-    if (timerState == TIMER_PAUSED)
-    {
-        if (timer.pauseBuffer > 0)
-        {
-            timer.pauseBuffer--;
-            return timer.pauseBuffer / 60;
-        }
-        else
-        {
-            timer.timesCompleted++;
-            display->setLineText(3, "PAUSE IS OVER!"); // TODO: speak with team about this.
-            timer.state = TIMER_STOPPED;
-            return timer.timeBuffer / 60;
-        }
-    }
-    if (timerState == TIMER_STOPPED)
-    {
-        buzzer->on();
-        display->setLineText(6, "TIMER FINISHED!"); // TODO: speak with team about this.
-        return 0;
-    }
-
-    return 0;
+    displayTimerState(0);
+    buzzer->off();
+    vibration->off();
 }
 
 void Board::connectToWiFi(const char *ssid, const char *pass)
@@ -177,6 +146,36 @@ void Board::setHttpClient(const char *host, const char *path, const uint16_t por
 
 char *Board::fetch(const uint32_t fetchSize) { return httpClient->fetch(fetchSize); }
 
+void Board::onBuzzer(uint8_t power)
+{
+    buzzer->on(power);
+}
+void Board::offBuzzer()
+{
+    buzzer->off();
+}
+
+void Board::onVibrationMotor(uint8_t power)
+{
+    vibration->on(power);
+}
+void Board::offVibrationMotor()
+{
+    vibration->off();
+}
+
+void Board::onSignals(uint8_t power[2])
+{
+    vibration->on(power[0]);
+    buzzer->on(power[1]);
+}
+
+void Board::reboot()
+{
+    // reset_usb_boot(1 << digitalPinToPinName(LED_BUILTIN), 0);
+    _ontouch1200bps_();
+}
+
 Board::~Board()
 {
     if (button != nullptr)
@@ -189,8 +188,6 @@ Board::~Board()
         delete ledRing;
     if (display != nullptr)
         delete display;
-    if (joystick != nullptr)
-        delete joystick;
     if (httpClient != nullptr)
         delete httpClient;
 }

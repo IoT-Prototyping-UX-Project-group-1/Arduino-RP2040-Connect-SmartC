@@ -1,7 +1,7 @@
 #include "software/weather.hpp"
 #include <ArduinoJson.h>
 
-WeatherState ConvertWeatherStringToWeatherStateEnum(float cloudsAll, char *weatherMain, char *weatherDescription)
+WeatherState convertWeatherStringToWeatherStateEnum(float cloudsAll, char *weatherMain, char *weatherDescription)
 {
     if (strcmp(weatherMain, "Clouds") == 0)
     {
@@ -58,7 +58,6 @@ void convertOpenWeatherToWeatherInformationStruct(char *response, WeatherInforma
     // Step 1: Convert the response to a JSON object
     StaticJsonDocument<1024 * 16 /* 10KB */> jsonDocument;
     DeserializationError error = deserializeJson(jsonDocument, response, strlen(response), DeserializationOption::Filter(filter));
-    response = "";
     if (error)
     {
         Serial.print(F("deserializeJson() failed: "));
@@ -69,7 +68,6 @@ void convertOpenWeatherToWeatherInformationStruct(char *response, WeatherInforma
         Serial.println("JSON successfully parsed.");
         WeatherForecast &firstForecast = weatherInformation.firstForecast;
         WeatherForecast &secondForecast = weatherInformation.secondForecast;
-        WeatherForecast &thirdForecast = weatherInformation.thirdForecast;
 
         // Step 2: Extract the data from the JSON object
         weatherInformation.city = (char *)calloc(strlen(jsonDocument["city"]["name"]) + 1, sizeof(char));
@@ -83,6 +81,8 @@ void convertOpenWeatherToWeatherInformationStruct(char *response, WeatherInforma
         strcpy(weatherMain1, jsonDocument["list"][0]["weather"][0]["main"]);
         char *weatherDescription1 = (char *)calloc(strlen(jsonDocument["list"][0]["weather"][0]["description"]) + 1, sizeof(char));
         strcpy(weatherDescription1, jsonDocument["list"][0]["weather"][0]["description"]);
+        weatherInformation.feelsLike = feelsLike1;
+        weatherInformation.weather = weatherDescription1;
 
         Serial.println("#1 -> Temperature feels_like: " + String(feelsLike1));
         Serial.println("#1 -> Weather Main: " + String(weatherMain1));
@@ -93,7 +93,7 @@ void convertOpenWeatherToWeatherInformationStruct(char *response, WeatherInforma
                                                               : feelsLike1 < 27   ? TemperatureState::WARM
                                                                                   : TemperatureState::HOT;
 
-        firstForecast.weatherState = ConvertWeatherStringToWeatherStateEnum(cloudsAll1, weatherMain1, weatherDescription1);
+        firstForecast.weatherState = convertWeatherStringToWeatherStateEnum(cloudsAll1, weatherMain1, weatherDescription1);
 
         Serial.println("#1 -> Temperature State: " + String(firstForecast.temperatureState));
         Serial.println("#1 -> Weather State: " + String(firstForecast.weatherState));
@@ -116,7 +116,7 @@ void convertOpenWeatherToWeatherInformationStruct(char *response, WeatherInforma
                                                                : feelsLike2 < 27   ? TemperatureState::WARM
                                                                                    : TemperatureState::HOT;
 
-        secondForecast.weatherState = ConvertWeatherStringToWeatherStateEnum(cloudsAll2, weatherMain2, weatherDescription2);
+        secondForecast.weatherState = convertWeatherStringToWeatherStateEnum(cloudsAll2, weatherMain2, weatherDescription2);
 
         Serial.println("#2 -> Temperature State: " + String(secondForecast.temperatureState));
         Serial.println("#2 -> Weather State: " + String(secondForecast.weatherState));

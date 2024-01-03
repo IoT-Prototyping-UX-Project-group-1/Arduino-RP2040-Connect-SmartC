@@ -1,21 +1,24 @@
 #include "hardware/buzzer.hpp"
 
-Buzzer::Buzzer(uint8_t pin) {
+Buzzer::Buzzer(uint8_t pin)
+{
     this->pin = pin;
     pinMode(pin, OUTPUT);
     digitalWrite(pin, LOW);
 }
 
-void Buzzer::on() {
-    digitalWrite(pin, HIGH);
+void Buzzer::on(uint8_t power)
+{
+    analogWrite(pin, power);
 }
 
-void Buzzer::off() {
+void Buzzer::off()
+{
     digitalWrite(pin, LOW);
 }
 
-Buzzer::~Buzzer() {
+Buzzer::~Buzzer()
+{
     digitalWrite(pin, LOW);
     pinMode(pin, INPUT);
 }
-

@@ -7,18 +7,18 @@ Vibration::Vibration(uint8_t pin)
     digitalWrite(pin, LOW);
 }
 
-void Vibration::on()
+void Vibration::on(uint8_t power)
 {
-    digitalWrite(pin, HIGH);
+    analogWrite(pin, power);
 }
 
 void Vibration::off()
 {
-    digitalWrite(pin, LOW);
+    analogWrite(pin, 0);
 }
 
 Vibration::~Vibration()
 {
-    digitalWrite(pin, LOW);
+    analogWrite(pin, 0);
     pinMode(pin, INPUT);
 }
